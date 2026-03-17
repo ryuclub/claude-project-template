@@ -22,11 +22,12 @@ LOCK_TIME_FILE="$LOCK_DIR/time"
 
 # 检查是否在 30 秒内已执行过
 if [ -f "$LOCK_TIME_FILE" ]; then
-  LAST_RUN=$(cat "$LOCK_TIME_FILE")
+  LAST_RUN=$(cat "$LOCK_TIME_FILE" 2>/dev/null || echo 0)
   CURRENT_TIME=$(date +%s)
   ELAPSED=$((CURRENT_TIME - LAST_RUN))
 
-  if [ $ELAPSED -lt 30 ]; then
+  if [ $ELAPSED -lt 30 ] && [ $LAST_RUN -ne 0 ]; then
+    echo "[DEDUP] Init already ran ${ELAPSED}s ago at $(date -d @$LAST_RUN '+%H:%M:%S' 2>/dev/null || echo 'unknown'), skipping"
     warn "Init already ran ${ELAPSED}s ago, skipping to avoid duplicate execution"
     exit 0
   fi
@@ -264,4 +265,5 @@ echo "📋 Log files:"
 echo "  cat .claude/logs/init.log                # View initialization log"
 
 # 记录本次执行时间（防重复）
+echo "Init completed at $(date '+%H:%M:%S')"
 date +%s > "$LOCK_TIME_FILE"
