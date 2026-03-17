@@ -53,7 +53,7 @@ fi
 # 3. 复制模板内容到项目根目录
 echo "📋 复制模板文件..."
 cp -r claude-project-template/* .
-cp claude-project-template/.gitignore . 2>/dev/null || true
+cp -r claude-project-template/.* . 2>/dev/null || true  # 复制隐藏文件（如.gitignore）
 
 # 4. 删除不再需要的模板目录
 echo "🗑️  清理模板目录..."
