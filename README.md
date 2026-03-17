@@ -2,7 +2,32 @@
 
 Claude Code 项目模板，支持两层规范体系（通用规范 + 项目特化规范）。采用**环境变量驱动**设计，无需占位符替换。
 
-## 快速开始
+## 快速开始（推荐）
+
+使用初始化脚本直接从 GitHub 创建新项目：
+
+```bash
+bash <(curl -s https://raw.githubusercontent.com/ryuclub/claude-project-template/main/init-project.sh) my-project
+```
+
+或使用 wget：
+
+```bash
+bash <(wget -qO- https://raw.githubusercontent.com/ryuclub/claude-project-template/main/init-project.sh) my-project
+```
+
+脚本会自动：
+1. 创建项目目录
+2. 获取模板（首次clone或更新现有）
+3. 复制.claude配置
+4. 初始化claude.env
+5. 提示后续配置步骤
+
+---
+
+## 手动快速开始
+
+如果不想用脚本，也可以手动执行：
 
 ```bash
 # 1. 创建项目目录
