@@ -40,24 +40,17 @@ cd "$PROJECT_PATH"
 
 # 2. 获取模板
 echo "📥 获取 claude-project-template..."
-if [ -d claude-project-template ]; then
-  echo "  ✓ 模板已存在，更新到最新..."
-  cd claude-project-template
-  git pull origin main
-  cd ..
-else
-  echo "  ✓ 首次 clone 模板..."
-  git clone https://github.com/ryuclub/claude-project-template.git
-fi
+git clone https://github.com/ryuclub/claude-project-template.git
 
 # 3. 复制模板内容到项目根目录
 echo "📋 复制模板文件..."
 cp -r claude-project-template/* .
 cp -r claude-project-template/.* . 2>/dev/null || true  # 复制隐藏文件（如.gitignore）
 
-# 4. 删除不再需要的模板目录
-echo "🗑️  清理模板目录..."
+# 4. 删除不再需要的模板文件和git配置
+echo "🗑️  清理模板文件..."
 rm -rf claude-project-template
+rm -rf .git  # 删除复制来的git配置（remote指向模板项目）
 
 # 5. 删除模板README并创建项目README
 echo "📝 创建项目README..."
