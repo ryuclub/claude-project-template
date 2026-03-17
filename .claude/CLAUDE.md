@@ -69,17 +69,16 @@ SessionStart hook 读取
     ↓
 导出到 Claude Code 环境
     ↓
-所有工具和命令可用
+AI 和规范脚本可用
 ```
 
-**可用变量：**
+**必填变量：**
 
-- JIRA：`ATLASSIAN_USERNAME`, `ATLASSIAN_API_KEY`, `ATLASSIAN_DOMAIN`
-- AWS：`AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_PROFILE`
-- 数据库：`RDS_ENDPOINT`, `RDS_USERNAME`, `RDS_PASSWORD` 等
-- Firebase：`FIREBASE_HTTP_BASE_URL`, `FIREBASE_PROJECT_ID` 等
+- Claude 自动化：`COMMON_REPO_URL`, `COMMON_CACHE_DIR`, `COMMON_CACHE_TTL`
+- JIRA：`ATLASSIAN_USERNAME`, `ATLASSIAN_API_KEY`, `ATLASSIAN_DOMAIN`, `JIRA_PROJECT`
+- GitHub：`GITHUB_ORG`, `GITHUB_REPO`, `GIT_REPO_URL`, `GIT_BRANCH_BASE`
 
-详见 `.claude/config/claude.env.example` 和 `ENV_LOADING_GUIDE.md`
+详见 `.claude/config/claude.env.example`
 
 ### 已加载的 Skills
 

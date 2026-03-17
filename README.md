@@ -20,32 +20,30 @@ vi .claude/config/claude.env
 
 ## 环境变量配置
 
-所有项目特化信息都通过 `.claude/config/claude.env` 提供，模板文件保持通用，无需修改。
+Claude Code 和规范脚本所需的凭证和配置通过 `.claude/config/claude.env` 提供。
 
 ### 必填变量
 
 ```bash
-# Atlassian JIRA（必须）
+# Claude-common 同步配置（SessionStart hook 自动使用）
+COMMON_REPO_URL="https://github.com/ryuclub/claude-common.git"
+COMMON_CACHE_DIR=".claude/.remote-cache"
+COMMON_CACHE_TTL="86400"
+
+# Atlassian JIRA（AI 调用 JIRA skill 需要）
 ATLASSIAN_USERNAME="your-email@example.com"
 ATLASSIAN_API_KEY="your-api-token"
 ATLASSIAN_DOMAIN="mycompany.atlassian.net"
 JIRA_PROJECT="ABC"
 
-# Git（必须）
-GIT_REPO_OWNER="your-org"
-GIT_REPO_NAME="your-repo"
+# GitHub（AI 调用 PR skill 需要）
+GITHUB_ORG="your-org"
+GITHUB_REPO="your-repo"
+GIT_REPO_URL="https://github.com/${GITHUB_ORG}/${GITHUB_REPO}.git"
+GIT_BRANCH_BASE="main"
 ```
 
-### 可选变量
-
-根据项目需要添加（详见 `.claude/config/claude.env.example`）：
-
-- **AWS**: `AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_PROFILE`
-- **数据库**: `RDS_ENDPOINT`, `RDS_USERNAME`, `RDS_PASSWORD` 等
-- **容器**: `ECR_REPO_NAME`, `ECS_CLUSTER_NAME`
-- **灰度部署**: `CANARY_WEIGHT_PHASE1_NEW` 等
-- **业务系统**: `STRIPE_API_KEY`, `KAFKA_BROKERS` 等
-- **日志监控**: `CLOUDWATCH_LOG_GROUP`, `DD_API_KEY` 等
+详见 `.claude/config/claude.env.example`
 
 ## 两层规范体系
 
@@ -67,10 +65,10 @@ GIT_REPO_NAME="your-repo"
 
 - `workflow.md` — 项目工作流规范
 - `branch.md` — 分支命名规则（使用 `$JIRA_PROJECT` 等变量）
-- `coding.md` — 编码语言规范（引用 `$TECH_STACK`）
+- `coding.md` — 编码语言规范
 - `jira.md` — 项目工单规范（使用 `$JIRA_DOMAIN` 等变量）
 
-所有这些文件中的 `$VARIABLE` 引用会在 Claude Code 启动时自动展开。
+这些文件中的 `$VARIABLE` 引用在 Claude Code 启动时自动展开。
 
 ## 工作原理
 
@@ -305,6 +303,125 @@ api_token = os.getenv('ATLASSIAN_API_KEY')
 jiraProject := os.Getenv("JIRA_PROJECT")
 awsRegion := os.Getenv("AWS_REGION")
 ```
+
+## 典型提示词示例
+
+### 1. 查看已加载的规范和 Skills
+
+**提示词：**
+```
+显示所有已加载的规范文件和 Skills，简要说明它们的用途
+```
+
+**预期输出：**
+- 列出 `.claude/.remote-cache/guidelines/` 中的 8 个通用规范
+- 列出 `.claude/guidelines/` 中的 4 个项目规范
+- 列出已加载的 Skills（如 jira-issue-reader, jira-manage-ticket, pr-creator 等）
+
+---
+
+### 2. 读取 JIRA 工单
+
+**提示词：**
+```
+读取 JIRA 工单 MOS-2590，告诉我工单的标题、描述、状态和经办人
+```
+
+**工作原理：**
+- AI 使用 JIRA skill 调用 curl 或 Python 脚本
+- 需要 `ATLASSIAN_USERNAME`, `ATLASSIAN_API_KEY`, `ATLASSIAN_DOMAIN`, `JIRA_PROJECT` 已配置
+- 脚本：`.claude/.remote-cache/skills/jira-issue-reader/scripts/read_issue.py`
+
+---
+
+### 3. 创建 JIRA 工单
+
+**提示词：**
+```
+为 MOS 项目创建一个 Story 工单，标题为"实现 DynamoDB Token Schema"，
+描述为"为 TokenService 设计优化的 DynamoDB schema，支持高效查询"，
+估时 5 小时
+```
+
+**工作原理：**
+- AI 调用 JIRA manage skill（jira-manage-ticket）
+- 脚本：`.claude/.remote-cache/skills/jira-manage-ticket/scripts/jira_api.py`
+- 自动关联到 `JIRA_PROJECT`
+
+---
+
+### 4. 创建分支和提交
+
+**提示词：**
+```
+根据规范为工单 MOS-2590 创建特性分支，分支名应该是什么?
+```
+
+**工作原理：**
+- AI 查询 `.claude/guidelines/branch.md` 了解分支命名规范
+- 规范中使用 `$JIRA_PROJECT` 占位符，自动替换为 "MOS"
+- 返回建议的分支名：`feat/MOS-2590-description`
+
+---
+
+### 5. 提交前审查
+
+**提示词：**
+```
+我要提交代码了，请按照项目的提交前审查清单检查我的改动
+```
+
+**工作原理：**
+- AI 加载 `.remote-cache/guidelines/06-pre-commit-review.md`（通用清单）
+- AI 加载 `.claude/guidelines/coding.md`（项目特化清单）
+- 执行 7 项检查并返回审查报告
+
+---
+
+### 6. 编写 JIRA 评论
+
+**提示词：**
+```
+在 JIRA 工单 MOS-2590 上添加评论，告诉项目组"设计已完成，进入实现阶段"，
+格式使用 JIRA Wiki 标记（不是 Markdown）
+```
+
+**工作原理：**
+- AI 调用 JIRA skill 写入评论
+- 自动使用 JIRA Wiki 标记格式（h2., *, [|] 等）
+- 遵循 `.claude/guidelines/jira.md` 中的评论规范
+
+---
+
+### 7. 创建 PR
+
+**提示词：**
+```
+我的分支是 feat/MOS-2590-token-schema，
+请为它创建一个 PR，目标是 main 分支，
+PR 标题应该体现工单号和功能
+```
+
+**工作原理：**
+- AI 调用 PR skill（pr-creator）
+- 需要 `GITHUB_ORG`, `GITHUB_REPO`, `GIT_REPO_URL`, `GIT_BRANCH_BASE` 已配置
+- 自动提取 commit message 生成 PR 描述
+
+---
+
+### 8. 查询编码规范
+
+**提示词：**
+```
+我在写 Go 代码，项目对日志、错误处理、测试覆盖率有什么要求?
+```
+
+**工作原理：**
+- AI 加载 `.claude/guidelines/coding.md`
+- 返回项目的 Go 编码规范、日志规范、测试覆盖率要求
+- 如需通用原则，查询 `.remote-cache/guidelines/04-coding-principles.md`
+
+---
 
 ## 相关文档
 
