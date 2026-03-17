@@ -1,6 +1,7 @@
 # Claude Code cache and auto-generated files
 .claude/.remote-cache/
 .claude/.remote-load.json
+.claude/.init-lock/
 .claude/config/claude.env
 .claude/config/.env.local
 .claude/logs/

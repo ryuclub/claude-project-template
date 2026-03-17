@@ -14,6 +14,24 @@ warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1" >&2; }
 info() { echo "  $1"; }
 
+# 防重复执行机制（30 秒内不重复执行）
+LOCK_DIR=".claude/.init-lock"
+mkdir -p "$LOCK_DIR"
+LOCK_FILE="$LOCK_DIR/running"
+LOCK_TIME_FILE="$LOCK_DIR/time"
+
+# 检查是否在 30 秒内已执行过
+if [ -f "$LOCK_TIME_FILE" ]; then
+  LAST_RUN=$(cat "$LOCK_TIME_FILE")
+  CURRENT_TIME=$(date +%s)
+  ELAPSED=$((CURRENT_TIME - LAST_RUN))
+
+  if [ $ELAPSED -lt 30 ]; then
+    warn "Init already ran ${ELAPSED}s ago, skipping to avoid duplicate execution"
+    exit 0
+  fi
+fi
+
 # 设置日志文件（会在后续创建）
 LOG_FILE=""
 
@@ -244,3 +262,6 @@ echo "  rm .claude/.remote-cache/.sync           # Force resync"
 echo ""
 echo "📋 Log files:"
 echo "  cat .claude/logs/init.log                # View initialization log"
+
+# 记录本次执行时间（防重复）
+date +%s > "$LOCK_TIME_FILE"
