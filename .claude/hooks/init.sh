@@ -14,6 +14,9 @@ warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1" >&2; }
 info() { echo "  $1"; }
 
+# 设置日志文件（会在后续创建）
+LOG_FILE=""
+
 echo "🔄 Initializing Claude Code for this project..."
 
 # 加载 claude.env 到当前 shell（用于后续变量替换）
@@ -34,6 +37,7 @@ CACHE_TTL="${COMMON_CACHE_TTL:-86400}"
 
 CACHE_GIT="$CACHE_DIR/.git"
 SYNC_FILE="$CACHE_DIR/.sync"
+LOG_FILE="$CACHE_DIR/.load.log"
 
 # 将 claude.env 持久化到 Claude Code 环境
 if [ -f "$CONFIG_ENV" ] && [ -n "$CLAUDE_ENV_FILE" ]; then
@@ -112,11 +116,15 @@ fi
 # 执行 claude-common 中的初始化脚本
 REMOTE_INIT_SCRIPT="$CACHE_DIR/hooks/init.sh"
 if [ -f "$REMOTE_INIT_SCRIPT" ]; then
-  echo ""
-  info "Executing remote initialization script..."
-  bash "$REMOTE_INIT_SCRIPT" || warn "Remote init script failed (continuing...)"
+  echo "" | tee -a "$LOG_FILE"
+  echo "🔗 Executing remote initialization script..." | tee -a "$LOG_FILE"
+  if bash "$REMOTE_INIT_SCRIPT" 2>&1 | tee -a "$LOG_FILE"; then
+    log "Remote init script completed successfully" | tee -a "$LOG_FILE"
+  else
+    warn "Remote init script failed (continuing...)" | tee -a "$LOG_FILE"
+  fi
 else
-  info "No remote init.sh found in claude-common"
+  info "No remote init.sh found in claude-common" | tee -a "$LOG_FILE"
 fi
 
 # 初始化目录变量（claude-common 已重构为根目录）
@@ -232,3 +240,6 @@ echo ""
 echo "🔄 Commands:"
 echo "  bash .claude/hooks/init.sh               # Manual sync"
 echo "  rm .claude/.remote-cache/.sync           # Force resync"
+echo ""
+echo "📋 Log files:"
+echo "  cat .claude/.remote-cache/.load.log      # View initialization log"
