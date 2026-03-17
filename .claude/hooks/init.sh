@@ -37,7 +37,11 @@ CACHE_TTL="${COMMON_CACHE_TTL:-86400}"
 
 CACHE_GIT="$CACHE_DIR/.git"
 SYNC_FILE="$CACHE_DIR/.sync"
-LOG_FILE="$CACHE_DIR/.load.log"
+
+# 日志文件放在 .claude/logs/ 而不是 .remote-cache 下
+LOGS_DIR=".claude/logs"
+mkdir -p "$LOGS_DIR"
+LOG_FILE="$LOGS_DIR/init.log"
 
 # 将 claude.env 持久化到 Claude Code 环境
 if [ -f "$CONFIG_ENV" ] && [ -n "$CLAUDE_ENV_FILE" ]; then
@@ -96,7 +100,7 @@ if [ "$NEED_UPDATE" = true ]; then
       # 克隆仓库（直接到新目录）
       if git clone --depth=1 "$REMOTE_REPO" "$CACHE_DIR" > /tmp/clone.log 2>&1; then
         log "Cloned claude-common successfully"
-        cat /tmp/clone.log >> "$CACHE_DIR/.load.log"
+        cat /tmp/clone.log >> "$LOG_FILE"
         rm /tmp/clone.log
       else
         error "Failed to clone claude-common"
@@ -107,7 +111,7 @@ if [ "$NEED_UPDATE" = true ]; then
 
     # 同步成功：更新时间戳
     echo "$(date +%s)" > "$SYNC_FILE"
-    echo "Synced at $(date)" >> "$CACHE_DIR/.load.log" 2>/dev/null
+    echo "Synced at $(date)" >> "$LOG_FILE" 2>/dev/null
   fi
 else
   info "Using cached rules and skills"
@@ -242,4 +246,4 @@ echo "  bash .claude/hooks/init.sh               # Manual sync"
 echo "  rm .claude/.remote-cache/.sync           # Force resync"
 echo ""
 echo "📋 Log files:"
-echo "  cat .claude/.remote-cache/.load.log      # View initialization log"
+echo "  cat .claude/logs/init.log                # View initialization log"

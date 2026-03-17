@@ -3,7 +3,7 @@
 .claude/.remote-load.json
 .claude/config/claude.env
 .claude/config/.env.local
-.claude/.remote-cache/.load.log
+.claude/logs/
 
 # IDE
 .vscode/
