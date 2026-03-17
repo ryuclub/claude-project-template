@@ -1,5 +1,5 @@
 #!/bin/bash
-# .claude/hooks/auto-load.sh
+# .claude/hooks/init.sh
 # 项目启动时自动从远程规范仓库下载并加载通用规范和 Skills
 # 配置来自 .claude/config/claude.env 中的环境变量
 
@@ -107,6 +107,16 @@ if [ "$NEED_UPDATE" = true ]; then
   fi
 else
   info "Using cached rules and skills"
+fi
+
+# 执行 claude-common 中的初始化脚本
+REMOTE_INIT_SCRIPT="$CACHE_DIR/hooks/init.sh"
+if [ -f "$REMOTE_INIT_SCRIPT" ]; then
+  echo ""
+  info "Executing remote initialization script..."
+  bash "$REMOTE_INIT_SCRIPT" || warn "Remote init script failed (continuing...)"
+else
+  info "No remote init.sh found in claude-common"
 fi
 
 # 初始化目录变量（claude-common 已重构为根目录）
@@ -218,14 +228,7 @@ info "Remote skills: .claude/.remote-cache/skills/"
 info "Load config: .claude/.remote-load.json"
 echo ""
 
-# 运行验证脚本，确保所有规范和 Skills 都已加载
-if [ -f ".claude/hooks/verify-sync.sh" ]; then
-  echo "📊 Status:"
-  bash .claude/hooks/verify-sync.sh 2>&1 | tail -15
-fi
-
 echo ""
 echo "🔄 Commands:"
-echo "  bash .claude/hooks/auto-load.sh          # Manual sync"
+echo "  bash .claude/hooks/init.sh               # Manual sync"
 echo "  rm .claude/.remote-cache/.sync           # Force resync"
-echo "  bash .claude/hooks/verify-sync.sh        # Check status"

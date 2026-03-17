@@ -90,7 +90,7 @@ GIT_BRANCH_BASE="main"
 
 ### Layer 1：通用规范（跨项目）
 
-来自 `claude-common` 仓库，由 `auto-load.sh` 自动同步到 `.claude/.remote-cache/guidelines/`：
+来自 `claude-common` 仓库，由 `init.sh` 自动同步到 `.claude/.remote-cache/guidelines/`：
 
 - `01-workflow.md` — 9步通用开发工作流
 - `02-design-document.md` — 设计文档编写标准
@@ -113,7 +113,7 @@ GIT_BRANCH_BASE="main"
 
 ## 工作原理
 
-Claude Code 启动时，SessionStart hook (`auto-load.sh`) 自动：
+Claude Code 启动时，SessionStart hook (`init.sh`) 自动：
 
 1. 加载 `.claude/config/claude.env` 到环境
 2. 同步 `claude-common` 规范（24h 缓存）
@@ -129,8 +129,7 @@ AI 助手准备就绪，可使用所有环境变量和规范。
 ├── README.md                      # .claude 目录说明
 ├── settings.json                  # Claude Code 项目设置
 ├── hooks/
-│   ├── auto-load.sh              # SessionStart hook
-│   └── verify-sync.sh            # 验证脚本
+│   └── init.sh              # SessionStart hook
 ├── guidelines/                    # 项目特化规范（4 个文件）
 │   ├── workflow.md
 │   ├── branch.md
@@ -169,29 +168,13 @@ AI 助手准备就绪，可使用所有环境变量和规范。
 
 ```bash
 rm .claude/.remote-cache/.sync
-bash .claude/hooks/auto-load.sh
+bash .claude/hooks/init.sh
 ```
 
 然后手动执行：
 
 ```bash
-bash .claude/hooks/auto-load.sh
-```
-
-### 验证同步状态
-
-```bash
-bash .claude/hooks/verify-sync.sh
-```
-
-输出应包含：
-
-```
-✓ Remote cache exists
-✓ Git repository initialized
-✓ 8 guidelines found
-✓ Skills configured
-✓ Config generated
+bash .claude/hooks/init.sh
 ```
 
 ## 项目初始化检查清单
@@ -201,13 +184,13 @@ bash .claude/hooks/verify-sync.sh
 - [ ] 复制 `claude.env.example` 为 `claude.env`
 - [ ] 填写 `claude.env` 中所有必填环境变量
 - [ ] 确保 `claude.env` 已在 `.gitignore` 中
-- [ ] 运行 `bash .claude/hooks/auto-load.sh` 验证同步
+- [ ] 运行 `bash .claude/hooks/init.sh` 验证同步
 - [ ] 提交 `.claude/` 目录（除 `claude.env`）
 - [ ] 团队成员可通过 `cp claude.env.example claude.env` 本地创建
 
 ## 故障排查
 
-### auto-load.sh 执行失败
+### init.sh 执行失败
 
 **检查步骤：**
 
@@ -220,7 +203,7 @@ ping github.com
 git clone --depth=1 https://github.com/ryuclub/claude-common.git /tmp/test-clone
 
 # 检查脚本语法
-bash -n .claude/hooks/auto-load.sh
+bash -n .claude/hooks/init.sh
 ```
 
 **常见原因：**
@@ -256,7 +239,7 @@ echo $JIRA_PROJECT
 
 ```bash
 rm .claude/.remote-cache/.sync
-bash .claude/hooks/auto-load.sh
+bash .claude/hooks/init.sh
 ```
 
 ## 典型提示词示例

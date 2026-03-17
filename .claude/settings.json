@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/auto-load.sh"
+            "command": "bash .claude/hooks/init.sh"
           }
         ]
       }

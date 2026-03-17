@@ -97,7 +97,7 @@ AI 和规范脚本可用
 | `.claude/settings.json`             | Claude Code 项目设置、hooks、skills路径        | ✅              |
 | `.claude/CLAUDE.md`                 | **本文件** — AI 行为指南                | ✅              |
 | `.claude/guidelines/`               | 项目特化规范（workflow, branch, coding, jira） | ✅              |
-| `.claude/hooks/auto-load.sh`        | SessionStart hook — 同步rules、加载凭证       | ✅              |
+| `.claude/hooks/init.sh`        | SessionStart hook — 同步rules、加载凭证       | ✅              |
 | `.claude/config/claude.env`         | 🔐 敏感信息（本地）                            | ❌ (.gitignore) |
 | `.claude/config/claude.env.example` | 配置模板                                       | ✅              |
 | `.claude/config/infrastructure.md`  | 非敏感参考信息（AWS、JIRA、RDS等）             | ✅              |
