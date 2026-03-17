@@ -16,16 +16,16 @@ cp -r temp/.claude .
 rm -rf temp
 git add .claude/
 
-# 3. 更新 COMMON_REPO_URL 指向项目自己的 claude-common
-# 如果项目有独立的 claude-common 仓库
-vi .claude/config/claude.env
-# 改为：COMMON_REPO_URL="https://github.com/YOUR_ORG/claude-common.git"
-
-# 4. 初始化配置文件
+# 3. 初始化配置文件
 cp .claude/config/claude.env.example .claude/config/claude.env
 
-# 5. 编辑配置，填写凭证
+# 4. 编辑配置，填写凭证和项目信息
 vi .claude/config/claude.env
+# 填写：ATLASSIAN_USERNAME, ATLASSIAN_API_KEY, ATLASSIAN_DOMAIN, JIRA_PROJECT
+# 填写：GITHUB_ORG, GITHUB_REPO, GIT_REPO_URL, GIT_BRANCH_BASE
+# 如果项目有独立的 claude-common，更新 COMMON_REPO_URL
+
+# 5. 完成！Claude Code 启动时自动加载所有环境变量
 
 # 6. 完成！Claude Code 启动时自动加载所有环境变量
 ```
