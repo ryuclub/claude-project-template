@@ -75,9 +75,6 @@ if [ "$NEED_UPDATE" = true ]; then
     error "git not found, cannot sync"
     [ -d "$CACHE_GIT" ] && warn "using existing cache" || error "no cache available"
   else
-    # 记录日志文件路径（用于后续 clone 时创建）
-    LOG_FILE="$CACHE_DIR/.load.log"
-
     if [ -d "$CACHE_GIT" ]; then
       # 更新现有仓库
       info "Updating existing cache..."
