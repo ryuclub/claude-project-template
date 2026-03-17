@@ -1,0 +1,55 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Read(../**)",
+      "Bash(git:*)"
+    ],
+    "additionalDirectories": [
+      "./.claude",
+      "./design"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/auto-load.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "git.*commit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/.remote-cache/.claude/hooks/pre-commit-review.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "document-skills@anthropic-agent-skills": false,
+    "example-skills@anthropic-agent-skills": false,
+    "claude-api@anthropic-agent-skills": false,
+    "frontend-design@claude-plugins-official": false,
+    "superpowers@claude-plugins-official": false,
+    "context7@claude-plugins-official": false,
+    "code-review@claude-plugins-official": false,
+    "github@claude-plugins-official": false,
+    "code-simplifier@claude-plugins-official": false,
+    "feature-dev@claude-plugins-official": false,
+    "generic-jira-tools@claude-generic-skills": false,
+    "generic-git-tools@claude-generic-skills": false
+  },
+  "skills": [
+    ".claude/skills",
+    ".claude/.remote-cache/skills"
+  ]
+}

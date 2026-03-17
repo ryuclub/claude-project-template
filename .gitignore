@@ -1,0 +1,16 @@
+# Claude Code cache and auto-generated files
+.claude/.remote-cache/
+.claude/.remote-load.json
+.claude/config/claude.env
+.claude/config/sensitive.env
+.claude/config/.env.local
+.claude/.remote-cache/.load.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
