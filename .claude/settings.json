@@ -1,12 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Read(./**)",
-      "Read(../**)",
       "Bash(git:*)"
     ],
     "additionalDirectories": [
-      "./.claude",
+      "./.claude/guidelines",
       "./design"
     ]
   },
