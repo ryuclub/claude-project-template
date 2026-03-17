@@ -27,32 +27,28 @@
 
 ---
 
-## 📚 规范导航（两层体系）
+## 📚 规范导航
 
-### Layer 1️⃣：通用规范（跨项目）
+### 项目规范 (`.claude/guidelines/`)
 
-来自 [claude-common](https://github.com/ryuclub/claude-common)，自动同步到 `.claude/.remote-cache/guidelines/`：
+| 规范                                       | 用途                                              | 何时查看         |
+| ------------------------------------------ | ------------------------------------------------- | ---------------- |
+| [workflow.md](./guidelines/workflow.md)    | Phase级工作流、灰度部署、设计评审                 | 理解项目流程     |
+| [branch.md](./guidelines/branch.md)        | 分支命名规则、创建分支                            | 创建分支         |
+| [coding.md](./guidelines/coding.md)        | 编码规范、日志、测试覆盖率                        | 编写代码         |
+| [jira.md](./guidelines/jira.md)            | 工单约定、脚本、必填字段                          | 操作工单         |
 
-| 规范                                                                     | 核心内容                                                          | 何时使用       |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------------- | -------------- |
-| [01-workflow.md](.remote-cache/guidelines/01-workflow.md)                   | 9步完整工作流：需求→设计→分支→实现→审查→提交→PR→回复→整理 | 开始任何新任务 |
-| [02-design-document.md](.remote-cache/guidelines/02-design-document.md)     | 设计文档写法、审查标准                                            | 编写设计方案   |
-| [03-branch-management.md](.remote-cache/guidelines/03-branch-management.md) | 分支命名、选择base分支、生命周期                                  | 创建新分支     |
-| [04-coding-principles.md](.remote-cache/guidelines/04-coding-principles.md) | 命名、组织、错误处理等语言无关原则                                | 编写代码       |
-| [05-review-checklist.md](.remote-cache/guidelines/05-review-checklist.md)   | 代码审查清单和质量标准                                            | 进行代码审查   |
-| [06-pre-commit-review.md](.remote-cache/guidelines/06-pre-commit-review.md) | 提交前7项检查清单                                                 | 创建 commit 前 |
-| [07-jira-conventions.md](.remote-cache/guidelines/07-jira-conventions.md)   | JIRA 最佳实践                                                     | 操作工单       |
+### 通用规范 (`.claude/.remote-cache/guidelines/`)
 
-### Layer 2️⃣：项目特化规范（本项目）
+自动同步自 [claude-common](https://github.com/ryuclub/claude-common)：
 
-在 `.claude/guidelines/` 中，具体约定：
-
-| 规范                                 | 重点                                               | 查看时机         |
-| ------------------------------------ | -------------------------------------------------- | ---------------- |
-| [workflow.md](./guidelines/workflow.md) | Phase级工作流、灰度部署、设计评审流程              | 理解项目特定流程 |
-| [branch.md](./guidelines/branch.md)     | 分支命名：`<type>/$JIRA_PROJECT-XXXX-description`          | 创建分支         |
-| [coding.md](./guidelines/coding.md)     | $TECH_STACK编码规范、日志规范、测试覆盖率要求 | 编写代码       |
-| [jira.md](./guidelines/jira.md)         | 项目工单约定、脚本创建、必填字段                   | 创建/操作工单    |
+- `01-workflow.md` — 9步完整工作流
+- `02-design-document.md` — 设计文档规范
+- `03-branch-management.md` — 分支策略
+- `04-coding-principles.md` — 语言无关原则
+- `05-review-checklist.md` — 代码审查标准
+- `06-pre-commit-review.md` — 提交前检查清单
+- `07-jira-conventions.md` — JIRA 最佳实践
 
 ---
 
@@ -82,11 +78,13 @@ AI 和规范脚本可用
 
 ### 已加载的 Skills
 
-| Skill                  | 用途                              | 调用方式                   |
-| ---------------------- | --------------------------------- | -------------------------- |
-| `jira-manage-ticket` | 读取、创建、更新、删除 JIRA 工单 | 参考 `guidelines/jira.md` |
-| `jira-wiki-reader`   | 读取和解析 Confluence Wiki        | `/jira-wiki-reader <url>` |
-| `pr-creator`         | 自动生成 PR 描述和创建 PR         | 参考通用规范               |
+| Skill                | 用途                  |
+| -------------------- | --------------------- |
+| `jira-manage-ticket` | JIRA 工单管理（CRUD） |
+| `jira-wiki-reader`   | 读取 Confluence Wiki  |
+| `pr-creator`         | 自动生成 PR 和创建 PR |
+
+使用方法详见项目规范文档。
 
 ---
 
@@ -107,16 +105,11 @@ AI 和规范脚本可用
 
 ### 配置参考
 
-**基础设施参考（非敏感）：** 见 `.claude/config/infrastructure.md`
+详见 `.claude/config/` 中的文档：
 
-- 项目代码、AWS区域、资源名称
-- JIRA 项目信息
-- 数据库端点
-
-**环境变量加载原理：** 
-
-- 官方 `$CLAUDE_ENV_FILE` 机制
-- 环境变量持久化到 session
+- `infrastructure.md` — AWS、JIRA、数据库等参考信息
+- `claude.env.example` — 配置模板
+- `.claude/config/claude.env` — 本地凭证（.gitignore）
 
 ---
 
@@ -161,138 +154,4 @@ AI 和规范脚本可用
 
 ---
 
-## 💡 常见场景
-
-### 需要读取 JIRA 工单
-
-所有 JIRA 凭证已自动加载，可用以下方式读取：
-
-#### 方式1：通过 curl（推荐）
-
-```bash
-curl -u $ATLASSIAN_USERNAME:$ATLASSIAN_API_KEY \
-  https://$ATLASSIAN_DOMAIN/rest/api/3/issue/MOS-2590 | jq
-```
-
-#### 方式2：通过 Python 脚本
-
-```bash
-python3 .claude/.remote-cache/skills/jira-issue-reader/scripts/read_issue.py MOS-2590
-```
-
-> **注意：** Skills 目前作为参考文档库，不支持直接 slash command 调用
-
-### 需要创建新工单
-
-```bash
-参考 .claude/guidelines/jira.md 中的脚本调用方式：
-
-python3 .claude/.remote-cache/.claude/skills/jira-manage-ticket/scripts/jira_api.py \
-  create-task "工单标题" "描述" [工时] [类型]
-```
-
-### 编写代码注释
-
-```go
-✅ 中文注释：
-// 计算用户推送令牌
-// 从 DynamoDB 读取令牌列表
-func GetPushTokens(userID string) ([]string, error) {
-    ...
-}
-
-❌ 混合英文：
-// Get user push tokens
-// 从 DynamoDB 读取
-```
-
-### 编写 commit message
-
-```bash
-✅ 中文，无AI署名：
-git commit -m "feat: 实现推送令牌的DynamoDB存储"
-
-❌ 添加AI署名：
-git commit -m "feat: 实现推送令牌的DynamoDB存储
-
-Co-Authored-By: Claude Code <noreply@anthropic.com>"
-```
-
-### 编写 PR 描述
-
-```markdown
-✅ 中文，无AI署名：
-## 标题
-实现推送令牌的DynamoDB存储优化
-
-## 说明
-- 将 Firestore Token 表迁移到 DynamoDB
-- 优化查询性能
-- 集成测试覆盖率 ≥ 70%
-
-❌ 添加「Generated with Claude Code」
-```
-
----
-
-## 📖 相关文档
-
-**项目特化规范：** `.claude/guidelines/`
-
-- `workflow.md` — 项目工作流
-- `branch.md` — 分支管理
-- `coding.md` — 编码规约
-- `jira.md` — 工单规范
-
-**通用规范：** `.claude/.remote-cache/guidelines/`
-
-- 通过 SessionStart hook 自动同步
-- 7个跨项目复用的规范文件
-
-**配置文档：** `.claude/config/`
-
-- `ENV_LOADING_GUIDE.md` — 环境变量加载机制
-- `infrastructure.md` — 基础设施参考
-- `claude.env.example` — 配置模板
-
-**项目内存：** `.claude/projects/.../memory/`
-
-- `project_mos2590.md` — MOS-2590项目信息
-- `feedback_env_loading.md` — 环境变量标准反馈
-
----
-
-## 🔧 技术细节
-
-### SessionStart Hook 工作流
-
-```
-Claude Code 启动
-  ↓
-SessionStart hook 触发（auto-load.sh）
-  ↓
-├─ 同步 claude-common（检查缓存TTL）
-├─ 加载 .claude/config/claude.env 到 $CLAUDE_ENV_FILE
-├─ 生成 .remote-load.json（规范和skills路径）
-└─ 输出初始化状态
-  ↓
-Claude Code 自动 source $CLAUDE_ENV_FILE
-  ↓
-环境变量对整个 session 可用
-```
-
-### 规范加载逻辑
-
-```
-任何任务开始
-  ├─ 默认加载：.remote-cache/guidelines/01-workflow.md
-  ├─ 编码时：.claude/guidelines/coding.md + .remote-cache/guidelines/04-coding-principles.md
-  ├─ 分支操作：.claude/guidelines/branch.md + .remote-cache/guidelines/03-branch-management.md
-  ├─ 工单操作：.claude/guidelines/jira.md + .remote-cache/guidelines/07-jira-conventions.md
-  └─ 代码审查：.remote-cache/guidelines/05-review-checklist.md
-```
-
----
-
-**最后更新：** 2026-03-17
-**版本：** v2 - 面向AI的行为指南
+**最后更新：** 2026-03-17 | **版本：** v2

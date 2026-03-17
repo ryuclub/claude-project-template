@@ -113,16 +113,13 @@ GIT_BRANCH_BASE="main"
 
 ## 工作原理
 
-```
-Claude Code 启动
-  ↓
-SessionStart hook (auto-load.sh)
-  ├─ 加载 .claude/config/claude.env 到环境
-  ├─ 同步 claude-common（检查 24h TTL）
-  └─ 生成规范和 Skills 索引
-  ↓
-所有环境变量和规范可用，AI 助手准备就绪
-```
+Claude Code 启动时，SessionStart hook (`auto-load.sh`) 自动：
+
+1. 加载 `.claude/config/claude.env` 到环境
+2. 同步 `claude-common` 规范（24h 缓存）
+3. 生成规范和 Skills 索引
+
+AI 助手准备就绪，可使用所有环境变量和规范。
 
 ## 文件结构
 
@@ -175,18 +172,6 @@ rm .claude/.remote-cache/.sync
 bash .claude/hooks/auto-load.sh
 ```
 
-### 修改 claude-common 源
-
-编辑 `.claude/settings.json` 中的 `remoteRules.repository`：
-
-```json
-"remoteRules": {
-  "repository": "https://github.com/your-new-org/claude-common.git",
-  "cacheTTL": 86400,
-  "cacheDir": ".claude/.remote-cache"
-}
-```
-
 然后手动执行：
 
 ```bash
@@ -209,16 +194,6 @@ bash .claude/hooks/verify-sync.sh
 ✓ Config generated
 ```
 
-## 为什么用环境变量而不是占位符替换？
-
-| 方案       | 占位符替换           | 环境变量           |
-| ---------- | -------------------- | ------------------ |
-| 初始化步骤 | 需要脚本自动替换文件 | 只需编辑一个文件   |
-| 模板复用性 | 低（文件被修改）     | 高（文件保持通用） |
-| 配置管理   | 分散在多个文件中     | 集中在 claude.env  |
-| CI/CD 集成 | 需要修改步骤         | 直接环境变量注入   |
-| 维护成本   | 高（多个版本变异）   | 低（单一版本）     |
-
 ## 项目初始化检查清单
 
 新项目初始化完成后，确认以下项：
@@ -229,47 +204,6 @@ bash .claude/hooks/verify-sync.sh
 - [ ] 运行 `bash .claude/hooks/auto-load.sh` 验证同步
 - [ ] 提交 `.claude/` 目录（除 `claude.env`）
 - [ ] 团队成员可通过 `cp claude.env.example claude.env` 本地创建
-
-## .claude 目录结构
-
-```
-.claude/
-├── CLAUDE.md                    # ⭐ AI 行为指南（核心）
-├── settings.json                # Claude Code 项目设置
-├── .remote-load.json            # 自动生成：规范索引
-├── hooks/
-│   ├── auto-load.sh             # SessionStart hook
-│   └── verify-sync.sh           # 验证脚本
-├── guidelines/                  # 项目特化规范（4个文件）
-│   ├── workflow.md              # 项目工作流规范
-│   ├── branch.md                # 分支管理规范
-│   ├── coding.md                # 编码规约
-│   └── jira.md                  # JIRA 工单规范
-├── config/
-│   ├── claude.env               # 🔐 本地凭证（不提交）
-│   ├── claude.env.example       # 凭证模板（提交）
-│   └── infrastructure.md        # 基础设施参考（提交）
-├── skills/                      # 项目特定 Skills（通常为空）
-└── .remote-cache/               # 自动生成缓存（不提交）
-    ├── guidelines/              # 同步的通用规范
-    ├── skills/                  # 同步的 Skills
-    └── .sync                    # 缓存时间戳
-```
-
-## AI 助手工作流
-
-当 Claude Code 启动时：
-
-```
-1. SessionStart hook 触发
-    ↓
-2. 执行 auto-load.sh
-    ├─ 同步 claude-common（检查 24h TTL）
-    ├─ 加载 .claude/config/claude.env 到环境
-    └─ 生成规范和 Skills 索引
-    ↓
-3. AI 助手准备就绪
-```
 
 ## 故障排查
 
@@ -325,162 +259,55 @@ rm .claude/.remote-cache/.sync
 bash .claude/hooks/auto-load.sh
 ```
 
-## 环境变量用法
-
-### 在 Bash 中
-
-```bash
-curl -u $ATLASSIAN_USERNAME:$ATLASSIAN_API_KEY \
-  https://$ATLASSIAN_DOMAIN/rest/api/3/issue/$JIRA_PROJECT-2590
-```
-
-### 在 Python 中
-
-```python
-import os
-jira_key = os.getenv('JIRA_PROJECT')
-api_token = os.getenv('ATLASSIAN_API_KEY')
-```
-
-### 在 Go 中
-
-```go
-jiraProject := os.Getenv("JIRA_PROJECT")
-awsRegion := os.Getenv("AWS_REGION")
-```
-
 ## 典型提示词示例
 
 ### 1. 查看已加载的规范和 Skills
 
-**提示词：**
-
 ```
-显示所有已加载的规范文件和 Skills，简要说明它们的用途
+显示所有已加载的规范文件和 Skills
 ```
-
-**预期输出：**
-
-- 列出 `.claude/.remote-cache/guidelines/` 中的 7 个通用规范
-- 列出 `.claude/guidelines/` 中的 4 个项目规范
-- 列出已加载的 Skills（如 jira-manage-ticket, jira-wiki-reader, pr-creator）
-
----
 
 ### 2. 读取 JIRA 工单
 
-**提示词：**
-
 ```
-读取 JIRA 工单 MOS-2590，告诉我工单的标题、描述、状态和经办人
+读取 JIRA 工单 MOS-2590 的标题、描述和状态
 ```
-
-**工作原理：**
-
-- AI 调用 jira-manage-ticket skill 的 `get` 命令
-- 需要 `ATLASSIAN_USERNAME`, `ATLASSIAN_API_KEY`, `ATLASSIAN_DOMAIN`, `JIRA_PROJECT` 已配置
-- 脚本：`.claude/.remote-cache/skills/jira-manage-ticket/scripts/jira_api.py`
-
----
 
 ### 3. 创建 JIRA 工单
 
-**提示词：**
-
 ```
-为 MOS 项目创建一个 Story 工单，标题为"实现 DynamoDB Token Schema"，
-描述为"为 TokenService 设计优化的 DynamoDB schema，支持高效查询"，
-估时 5 小时
+为 MOS 项目创建 Story 工单，标题"实现 Token Schema"，估时 5 小时
 ```
 
-**工作原理：**
-
-- AI 调用 JIRA manage skill（jira-manage-ticket）
-- 脚本：`.claude/.remote-cache/skills/jira-manage-ticket/scripts/jira_api.py`
-- 自动关联到 `JIRA_PROJECT`
-
----
-
-### 4. 创建分支和提交
-
-**提示词：**
+### 4. 创建分支
 
 ```
-根据规范为工单 MOS-2590 创建特性分支，分支名应该是什么?
+根据规范为工单 MOS-2590 创建特性分支名
 ```
-
-**工作原理：**
-
-- AI 查询 `.claude/guidelines/branch.md` 了解分支命名规范
-- 规范中使用 `$JIRA_PROJECT` 占位符，自动替换为 "MOS"
-- 返回建议的分支名：`feat/MOS-2590-description`
-
----
 
 ### 5. 提交前审查
 
-**提示词：**
-
 ```
-我要提交代码了，请按照项目的提交前审查清单检查我的改动
+按照项目的提交前审查清单检查我的改动
 ```
-
-**工作原理：**
-
-- AI 加载 `.remote-cache/guidelines/06-pre-commit-review.md`（通用清单）
-- AI 加载 `.claude/guidelines/coding.md`（项目特化清单）
-- 执行 7 项检查并返回审查报告
-
----
 
 ### 6. 编写 JIRA 评论
 
-**提示词：**
-
 ```
-在 JIRA 工单 MOS-2590 上添加评论，告诉项目组"设计已完成，进入实现阶段"，
-格式使用 JIRA Wiki 标记（不是 Markdown）
+在 JIRA 工单 MOS-2590 上添加评论，用 JIRA Wiki 格式
 ```
-
-**工作原理：**
-
-- AI 调用 JIRA skill 写入评论
-- 自动使用 JIRA Wiki 标记格式（h2., *, [|] 等）
-- 遵循 `.claude/guidelines/jira.md` 中的评论规范
-
----
 
 ### 7. 创建 PR
 
-**提示词：**
-
 ```
-我的分支是 feat/MOS-2590-token-schema，
-请为它创建一个 PR，目标是 main 分支，
-PR 标题应该体现工单号和功能
+为分支 feat/MOS-2590-token-schema 创建 PR 到 main
 ```
-
-**工作原理：**
-
-- AI 调用 PR skill（pr-creator）
-- 需要 `GITHUB_ORG`, `GITHUB_REPO`, `GIT_REPO_URL`, `GIT_BRANCH_BASE` 已配置
-- 自动提取 commit message 生成 PR 描述
-
----
 
 ### 8. 查询编码规范
 
-**提示词：**
-
 ```
-我在写 Go 代码，项目对日志、错误处理、测试覆盖率有什么要求?
+项目对 Go 代码的日志、错误处理、测试覆盖率有什么要求?
 ```
-
-**工作原理：**
-
-- AI 加载 `.claude/guidelines/coding.md`
-- 返回项目的 Go 编码规范、日志规范、测试覆盖率要求
-- 如需通用原则，查询 `.remote-cache/guidelines/04-coding-principles.md`
 
 ---
 
