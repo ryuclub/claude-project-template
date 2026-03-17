@@ -14,24 +14,27 @@ warn() { echo -e "${YELLOW}⚠${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1" >&2; }
 info() { echo "  $1"; }
 
-# 防重复执行机制（30 秒内不重复执行）
+# 互斥锁：防止多个 init.sh 同时运行
 LOCK_DIR=".claude/.init-lock"
 mkdir -p "$LOCK_DIR"
-LOCK_FILE="$LOCK_DIR/running"
-LOCK_TIME_FILE="$LOCK_DIR/time"
+LOCK_FILE="$LOCK_DIR/lock"
+PID_FILE="$LOCK_DIR/pid"
 
-# 检查是否在 30 秒内已执行过
-if [ -f "$LOCK_TIME_FILE" ]; then
-  LAST_RUN=$(cat "$LOCK_TIME_FILE" 2>/dev/null || echo 0)
-  CURRENT_TIME=$(date +%s)
-  ELAPSED=$((CURRENT_TIME - LAST_RUN))
-
-  if [ $ELAPSED -lt 30 ] && [ $LAST_RUN -ne 0 ]; then
-    echo "[DEDUP] Init already ran ${ELAPSED}s ago at $(date -d @$LAST_RUN '+%H:%M:%S' 2>/dev/null || echo 'unknown'), skipping"
-    warn "Init already ran ${ELAPSED}s ago, skipping to avoid duplicate execution"
+# 检查是否有其他进程在运行
+if [ -f "$PID_FILE" ]; then
+  OLD_PID=$(cat "$PID_FILE" 2>/dev/null)
+  # 检查该进程是否还在运行
+  if kill -0 "$OLD_PID" 2>/dev/null; then
+    warn "Another init process (PID $OLD_PID) is running, skipping to avoid race conditions"
     exit 0
+  else
+    # 旧进程已死亡，清理锁文件
+    rm -f "$PID_FILE"
   fi
 fi
+
+# 写入当前进程 ID
+echo $$ > "$PID_FILE"
 
 # 设置日志文件（会在后续创建）
 LOG_FILE=""
@@ -264,6 +267,5 @@ echo ""
 echo "📋 Log files:"
 echo "  cat .claude/logs/init.log                # View initialization log"
 
-# 记录本次执行时间（防重复）
-echo "Init completed at $(date '+%H:%M:%S')"
-date +%s > "$LOCK_TIME_FILE"
+# 脚本结束，清理锁文件
+rm -f "$PID_FILE"
