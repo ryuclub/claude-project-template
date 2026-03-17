@@ -37,7 +37,12 @@
     "example-skills@anthropic-agent-skills": false,
     "claude-api@anthropic-agent-skills": false,
     "generic-jira-tools@claude-generic-skills": false,
-    "generic-git-tools@claude-generic-skills": false
+    "generic-git-tools@claude-generic-skills": false,
+    "context7@claude-plugins-official": false,
+    "code-review@claude-plugins-official": false,
+    "github@claude-plugins-official": false,
+    "code-simplifier@claude-plugins-official": false,
+    "feature-dev@claude-plugins-official": false
   },
   "skills": [
     ".claude/skills",
