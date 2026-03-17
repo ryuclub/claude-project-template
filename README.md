@@ -314,9 +314,9 @@ awsRegion := os.Getenv("AWS_REGION")
 ```
 
 **预期输出：**
-- 列出 `.claude/.remote-cache/guidelines/` 中的 8 个通用规范
+- 列出 `.claude/.remote-cache/guidelines/` 中的 7 个通用规范
 - 列出 `.claude/guidelines/` 中的 4 个项目规范
-- 列出已加载的 Skills（如 jira-issue-reader, jira-manage-ticket, pr-creator 等）
+- 列出已加载的 Skills（如 jira-manage-ticket, jira-wiki-reader, pr-creator）
 
 ---
 
@@ -328,9 +328,9 @@ awsRegion := os.Getenv("AWS_REGION")
 ```
 
 **工作原理：**
-- AI 使用 JIRA skill 调用 curl 或 Python 脚本
+- AI 调用 jira-manage-ticket skill 的 `get` 命令
 - 需要 `ATLASSIAN_USERNAME`, `ATLASSIAN_API_KEY`, `ATLASSIAN_DOMAIN`, `JIRA_PROJECT` 已配置
-- 脚本：`.claude/.remote-cache/skills/jira-issue-reader/scripts/read_issue.py`
+- 脚本：`.claude/.remote-cache/skills/jira-manage-ticket/scripts/jira_api.py`
 
 ---
 

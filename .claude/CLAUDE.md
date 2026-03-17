@@ -82,12 +82,11 @@ AI 和规范脚本可用
 
 ### 已加载的 Skills
 
-| Skill                  | 用途                       | 调用方式                        |
-| ---------------------- | -------------------------- | ------------------------------- |
-| `jira-issue-reader`  | 读取和分析 JIRA 工单       | `/jira-issue-reader MOS-XXXX` |
-| `jira-manage-ticket` | 创建、更新、删除 JIRA 工单 | 参考 `guidelines/jira.md`     |
-| `jira-wiki-reader`   | 读取和解析 Confluence Wiki | `/jira-wiki-reader <url>`     |
-| `pr-creator`         | 自动生成 PR 描述和创建 PR  | 参考通用规范                    |
+| Skill                  | 用途                              | 调用方式                   |
+| ---------------------- | --------------------------------- | -------------------------- |
+| `jira-manage-ticket` | 读取、创建、更新、删除 JIRA 工单 | 参考 `guidelines/jira.md` |
+| `jira-wiki-reader`   | 读取和解析 Confluence Wiki        | `/jira-wiki-reader <url>` |
+| `pr-creator`         | 自动生成 PR 描述和创建 PR         | 参考通用规范               |
 
 ---
 
